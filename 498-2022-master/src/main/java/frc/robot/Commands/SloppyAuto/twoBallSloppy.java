@@ -1,6 +1,7 @@
 package frc.robot.Commands.SloppyAuto;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Commands.ToggleWristIn;
 import frc.robot.Commands.ToggleWristOut;
@@ -22,7 +23,7 @@ public class twoBallSloppy extends SequentialCommandGroup{
                 new TimedFlywheel(flywheel, Flywheel.State.REV, 2.5),
                 new TimedUpperIndex(upperIndex, UpperIndex.State.REV, 2.5)),
                 //new ToggleUpperIndex(upperIndex, UpperIndex.State.REV)),3
-            new ParallelCommandGroup(
+            new ParallelDeadlineGroup(
                 new DriveToStall(drivetrain, -.5, .8),
                 //new TimedTurn(drivetrain, 1.01),//swap for right positive left negative
                 new ToggleWristIn(wrist)
@@ -30,20 +31,20 @@ public class twoBallSloppy extends SequentialCommandGroup{
             ),
             new TimedFlywheel(flywheel, Flywheel.State.FULL, 1),//wait
             new ParallelCommandGroup(
-                new TimedFlywheel(flywheel, Flywheel.State.FULL, 2),
-                new TimedTurn(drivetrain, 1.7)//swap for right positive left negative
+                //new TimedFlywheel(flywheel, Flywheel.State.FULL, 2),
+                new TimedTurn(drivetrain, 1.45)//swap for right positive left negative
                 ),//9.3
 
             new ParallelCommandGroup(
                     new TimedFlywheel(flywheel, Flywheel.State.FULL, 3),
-                    new DriveToStall(drivetrain, .5, 1)),//
-            new ParallelCommandGroup(
-                new DriveToStall(drivetrain, -.5, .1),
-                new TimedFlywheel(flywheel, Flywheel.State.FULL, .1)
-            ),
+                    new DriveToStall(drivetrain, .4, 2)),//
+            // new ParallelCommandGroup(
+            //     new DriveToStall(drivetrain, -.5, .1),
+            //     new TimedFlywheel(flywheel, Flywheel.State.FULL, .1)
+            // ),
             new ParallelCommandGroup(
                 new TimedShootCargo(upperIndex, lowerIndex, .25),
-                new TimedFlywheel(flywheel, Flywheel.State.FULL, 3)),
+                new TimedFlywheel(flywheel, Flywheel.State.FULL, 2)),
 
             new ParallelCommandGroup(
                 new TimedShootCargo(upperIndex, lowerIndex, 2),

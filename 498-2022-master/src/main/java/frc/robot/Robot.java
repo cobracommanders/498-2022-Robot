@@ -3,19 +3,11 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.Limelight.LEDMode;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -25,38 +17,41 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-
   private RobotContainer m_robotContainer;
-
+  private final Limelight limelight = new Limelight();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
-  Thread m_visionThread;
+  //Thread m_visionThread;
   @Override
   public void robotInit() {
+    limelight.camMode.setNumber(1);
+    limelight.setLEDMode(LEDMode.OFF);
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_visionThread = new Thread(
-      ()->{
-        UsbCamera camera = CameraServer.startAutomaticCapture();
-        camera.setResolution(640, 480);
-        CvSink cvSink = CameraServer.getVideo();
-        CvSource outputStream = CameraServer.putVideo("Rectangle", 640, 480);
-        Mat mat = new Mat();
-        while(!Thread.interrupted()){
-          if(cvSink.grabFrame(mat) == 0){
-            outputStream.notifyError(cvSink.getError());
-            continue;
-          }
-          Imgproc.rectangle(mat, new Point(100, 100), new Point(400, 400), new Scalar(255, 255, 255), 5);
-          outputStream.putFrame(mat);
-        }
-      });
-      m_visionThread.setDaemon(true);
-      m_visionThread.start();
+    // m_visionThread = new Thread(
+    //   ()->{
+    //     UsbCamera camera = CameraServer.startAutomaticCapture();
+    //     camera.setResolution(640, 480);
+    //     CvSink cvSink = CameraServer.getVideo();
+    //     CvSource outputStream = CameraServer.putVideo("Rectangle", 640, 480);
+    //     Mat mat = new Mat();
+    //     while(!Thread.interrupted()){
+    //       if(cvSink.grabFrame(mat) == 0){
+    //         outputStream.notifyError(cvSink.getError());
+    //         continue;
+    //       }
+    //       Imgproc.rectangle(mat, new Point(100, 100), new Point(400, 400), new Scalar(255, 255, 255), 5);
+    //       outputStream.putFrame(mat);
+    //     }
+    //   });
+    //   m_visionThread.setDaemon(true);
+    //   m_visionThread.start();
 
     m_robotContainer = new RobotContainer();
+    m_robotContainer.setupDashboard();
+
   }
 
   /**
@@ -68,6 +63,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
@@ -77,16 +73,21 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    limelight.setLEDMode(LEDMode.OFF);
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.updateAuto();
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    limelight.setLEDMode(LEDMode.OFF);
+    m_robotContainer.updateAuto();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector",
      * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
@@ -103,10 +104,12 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
+
   }
 
   @Override
   public void teleopInit() {
+    limelight.setLEDMode(LEDMode.ON);
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

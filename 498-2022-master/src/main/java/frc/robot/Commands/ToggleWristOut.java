@@ -1,6 +1,5 @@
 package frc.robot.Commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Wrist;
 import frc.robot.subsystems.Wrist.Position;
@@ -18,8 +17,9 @@ public class ToggleWristOut extends CommandBase{
     @Override
     public void execute() {
       wrist.setPosition(Position.OUT);
+      wrist.position = Position.OUT;
       //wrist.set(.2);
-      SmartDashboard.putNumber("WristPError", wrist.pidController.getPositionError());
+     // SmartDashboard.putNumber("WristPError", wrist.pidController.getPositionError());
     }
     @Override
     public boolean isFinished(){

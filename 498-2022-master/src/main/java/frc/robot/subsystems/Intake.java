@@ -14,8 +14,10 @@ public class Intake extends SubsystemBase{
     public RelativeEncoder m_rightEncoder = m_right.getEncoder();
     public State state = State.OFF;
     public enum State {
-      FWD(.6),
-      REV(-.6),
+      FWD(1),
+      REV(-1),
+      SPIT(-.8),
+      SOFT(-.35),
       OFF(0);
       public double speed;
       private State(double speed) {

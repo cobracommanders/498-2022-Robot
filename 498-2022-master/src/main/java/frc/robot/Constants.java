@@ -22,7 +22,7 @@ public final class Constants {
     public static int kCountsPerRev = 2048;
     public static double kGearRatio = 7;//7:1
     public static double kWheelRadiusInches = 2.25;
-    public static double maxSpeedMetersPerSec = 1.5;//2.67
+    public static double maxSpeedMetersPerSec = 1.4;//2.67
 
     public static final double kTrackwidthMeters = Units.inchesToMeters(25.5);//~24.5in
     public static final DifferentialDriveKinematics kDriveKinematics =

@@ -8,7 +8,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
 
@@ -17,14 +16,14 @@ public class Wrist extends SubsystemBase{
     public ArmFeedforward feedForward = new ArmFeedforward(IntakeConstants.ks, IntakeConstants.kcos, IntakeConstants.kv, IntakeConstants.ka);
     public WPI_TalonFX m_left = new WPI_TalonFX(8);
     public WPI_TalonFX m_right = new WPI_TalonFX(61);
-    public static DigitalInput downLimit = new DigitalInput(0);
-    public static DigitalInput upLimit = new DigitalInput(1);
-    public static DigitalInput rightLimit = new DigitalInput(4);
+    public static DigitalInput downLimit = new DigitalInput(8);
+    public static DigitalInput upLimit = new DigitalInput(9);
+    public static DigitalInput rightLimit = new DigitalInput(5);
 
     public Position position = Position.IN;
     double outLimit = 2048;
     double inLimit = 0;
-    double speed = .2;
+    double speed = .18;
     double error;
     //private Position m_position = Position.IN;
     public double setpoint = 0;
@@ -63,25 +62,39 @@ public class Wrist extends SubsystemBase{
       }
       @Override
       public void periodic() {
-        SmartDashboard.putNumber("WristPose", getRadians());
+        //SmartDashboard.putNumber("WristPose", getRadians());
 
+        // if(getDownSensor()==true){
+        //   outLimit = m_left.getSelectedSensorPosition();
+        // }
+        // if(getUpSensor()==true){
+        //   inLimit = m_left.getSelectedSensorPosition();
+        // }
         if(position == Position.IN && getUpSensor()==false){
+          //error = (inLimit-m_left.getSelectedSensorPosition())/inLimit;
           m_left.setVoltage(-speed*12);
           m_right.setVoltage(-speed*12);
         }
+        else
         if(position == Position.OUT && getDownSensor()==false){
+          //error = (outLimit-m_left.getSelectedSensorPosition())/outLimit;
           m_left.setVoltage(speed*12);
         }
         if(position == Position.OUT && !rightLimit.get() == false){
           m_right.setVoltage(speed*12);
         }
+        //  SmartDashboard.putBoolean("IN Limit", rightLimit.get());
+        //  SmartDashboard.putBoolean("OUT Limit", upLimit.get());
+
+        //setPID(position);
+        // This method will be called once per scheduler run
       }
       public double getRadians() {
         return 2*Math.PI*(m_left.getSelectedSensorPosition()/2048)/48;
       }
       public void set(double speed){
         m_left.setVoltage(speed*12);
-        m_right.setVoltage(speed*12);
+        m_right.setVoltage(-speed*12);
       }
       public void setPID(Position position){
         m_left.setVoltage((feedForward.calculate(pidController.calculate(getRadians(), position.setpoint), 0.01))*11);

@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
@@ -12,19 +14,29 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveKinematicsConstraint;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.ADIS16448_IMU;
 import edu.wpi.first.wpilibj.ADIS16448_IMU.CalibrationTime;
 import edu.wpi.first.wpilibj.ADIS16448_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 
 public class Drivetrain extends SubsystemBase {
@@ -35,6 +47,7 @@ public class Drivetrain extends SubsystemBase {
   final WPI_TalonFX m_left_2 = new WPI_TalonFX(11);//back
   public final WPI_TalonFX m_right_1 = new WPI_TalonFX(19);//front
   final WPI_TalonFX m_right_2 = new WPI_TalonFX(18);//back
+  //private SlewRateLimiter driveLimiter = new SlewRateLimiter(2);
   //public final DifferentialDrive m_drive = new DifferentialDrive(m_left_1, m_right_1);
   public SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(
                     DriveConstants.ksVolts.get(),
@@ -53,9 +66,9 @@ public class Drivetrain extends SubsystemBase {
     configTalon(m_right_1, true);
     configTalon(m_right_2, true);
     m_left_1.setNeutralMode(NeutralMode.Coast);
-    m_left_2.setNeutralMode(NeutralMode.Brake);
+    m_left_2.setNeutralMode(NeutralMode.Coast);
     m_right_1.setNeutralMode(NeutralMode.Coast);
-    m_right_2.setNeutralMode(NeutralMode.Brake);
+    m_right_2.setNeutralMode(NeutralMode.Coast);
     m_left_2.follow(m_left_1);
     m_right_2.follow(m_right_1);
     leftController.setTolerance(3, 4);
@@ -75,6 +88,12 @@ public class Drivetrain extends SubsystemBase {
     motor.configPeakOutputForward(1);
     motor.configPeakOutputReverse(-1);
   }
+  public void setNeutralMode(NeutralMode neutralMode){
+    m_left_1.setNeutralMode(neutralMode);
+    m_left_2.setNeutralMode(neutralMode);
+    m_right_1.setNeutralMode(neutralMode);
+    m_right_2.setNeutralMode(neutralMode);
+  }
   public void configRamp(double secToFull){
     m_left_1.configOpenloopRamp(secToFull);
     m_left_2.configOpenloopRamp(secToFull);
@@ -88,7 +107,7 @@ public class Drivetrain extends SubsystemBase {
       getHeading(), 
       nativeUnitsToDistanceMeters(averageLeftPosition()), 
       nativeUnitsToDistanceMeters(averageRightPosition()));
-      SmartDashboard.putData("Field2d", m_field);
+      //SmartDashboard.putData("Field", m_field);
   }
   public double getGyro(){
     return -m_gyro.getGyroAngleZ();
@@ -120,14 +139,12 @@ public class Drivetrain extends SubsystemBase {
   public boolean halfSpeed = false;
   public void setPIDNoGyro(double leftSpeed, double rightSpeed){
     if(halfSpeed){
-      leftSpeed = leftSpeed/2;
-      rightSpeed = rightSpeed/2;
+      leftSpeed = leftSpeed/3;
+      rightSpeed = rightSpeed/3;
     }
     leftSpeed = leftSpeed * DriveConstants.maxSpeedMetersPerSec;
     rightSpeed = rightSpeed * DriveConstants.maxSpeedMetersPerSec;
 
-    //THESE PID CONTROLLERS ARE NOT CORRECT
-    //Causes improper units, but consistent result
     m_left_1.setVoltage(feedForward.calculate(leftSpeed)+leftController.calculate(leftWheelSpeedMetersPerSecond(), leftSpeed));
     m_right_1.setVoltage(feedForward.calculate(rightSpeed)+rightController.calculate(rightWheelSpeedMetersPerSecond(), rightSpeed));
     //m_left_1.setVoltage((leftController.calculate(m_left_1.getMotorOutputVoltage(), feedForward.calculate(leftSpeed* DriveConstants.maxSpeedMetersPerSec))));
@@ -197,4 +214,63 @@ public class Drivetrain extends SubsystemBase {
     double positionMeters = wheelRotations * (2 * Math.PI * Units.inchesToMeters(DriveConstants.kWheelRadiusInches));
     return positionMeters;
   }
+
+
+
+
+
+
+
+  CentripetalAccelerationConstraint centripetalAccelerationConstraint = new CentripetalAccelerationConstraint(AutoConstants.maxCentripetalAcceleration);
+    DifferentialDriveVoltageConstraint autoVoltageConstraint =
+        new DifferentialDriveVoltageConstraint(
+            new SimpleMotorFeedforward(
+                DriveConstants.ksVolts.get(),
+                DriveConstants.kvVoltSecondsPerMeter.get(),
+                DriveConstants.kaVoltSecondsSquaredPerMeter.get()),
+            DriveConstants.kDriveKinematics,
+            6);
+    DifferentialDriveKinematicsConstraint differentialDriveKinematicsConstraint = new DifferentialDriveKinematicsConstraint(DriveConstants.kDriveKinematics, AutoConstants.kMaxSpeedMetersPerSecond);
+    // Create config for trajectory
+    
+    TrajectoryConfig config =
+            new TrajectoryConfig(
+                    AutoConstants.kMaxSpeedMetersPerSecond,
+                    AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+                // Add kinematics to ensure max speed is actually obeyed
+                .setKinematics(DriveConstants.kDriveKinematics)
+                // Apply the voltage constraint
+                .addConstraint(autoVoltageConstraint)
+                .addConstraint(differentialDriveKinematicsConstraint)
+                .addConstraint(centripetalAccelerationConstraint);
+
+    public Command generate(Drivetrain drivetrain, Pose2d p0, Pose2d p1, Translation2d i0, Translation2d i1){
+        Trajectory exampleTrajectory =
+            TrajectoryGenerator.generateTrajectory(
+                // Start at p0
+                p0,
+                // Pass through i0, i1
+                List.of(i0, i1),
+                // End at p1
+                p1,
+                // Pass config
+                config);
+        RamseteCommand ramseteCommand =
+            new RamseteCommand(
+                exampleTrajectory,
+                drivetrain::getPose,
+                new RamseteController(AutoConstants.kRamseteB, AutoConstants.kRamseteZeta),
+                drivetrain.feedForward,
+                DriveConstants.kDriveKinematics,
+                drivetrain::getWheelSpeeds,
+                drivetrain.leftController,
+                drivetrain.rightController,
+                // RamseteCommand passes volts to the callback
+                drivetrain::tankDriveVolts,
+                drivetrain);
+        // Reset odometry to the starting pose of the trajectory.
+        drivetrain.resetOdometry(exampleTrajectory.getInitialPose());
+        // Run path following command, then stop at the end.
+        return ramseteCommand.andThen(() -> drivetrain.tankDriveVolts(0, 0));
+    }
 }

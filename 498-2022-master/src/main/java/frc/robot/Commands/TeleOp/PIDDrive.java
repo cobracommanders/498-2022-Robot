@@ -24,14 +24,14 @@ public class PIDDrive extends CommandBase{
     s = speed.getAsDouble();
     r = rotation.getAsDouble();
     drivetrain.setPID(s+r, s-r);
-    SmartDashboard.putNumber("Left Drive Velocity", drivetrain.leftWheelSpeedMetersPerSecond());
-    SmartDashboard.putNumber("Right Drive Velocity", drivetrain.rightWheelSpeedMetersPerSecond());
+    //SmartDashboard.putNumber("Left Drive Velocity", drivetrain.leftWheelSpeedMetersPerSecond());
+    //SmartDashboard.putNumber("Right Drive Velocity", drivetrain.rightWheelSpeedMetersPerSecond());
 
-    SmartDashboard.putNumber("Left Stator Current", drivetrain.m_left_1.getStatorCurrent());
-    SmartDashboard.putNumber("Left Supply Current", drivetrain.m_left_1.getSupplyCurrent());
+    //SmartDashboard.putNumber("Left Stator Current", drivetrain.m_left_1.getStatorCurrent());
+    //SmartDashboard.putNumber("Left Supply Current", drivetrain.m_left_1.getSupplyCurrent());
 
-    SmartDashboard.putNumber("Drive Heading", drivetrain.getHeading().getDegrees());
-    SmartDashboard.putNumber("Drive Total Velocity", drivetrain.getAbsoluteVelocity());
+    //SmartDashboard.putNumber("Drive Heading", drivetrain.getHeading().getDegrees());
+    //SmartDashboard.putNumber("Drive Total Velocity", drivetrain.getAbsoluteVelocity());
   }
 
   // Called once after isFinished returns true

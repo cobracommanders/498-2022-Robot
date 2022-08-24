@@ -17,13 +17,15 @@ public class BlinkinCommand extends CommandBase{
       if(data.getSensorData(data.m_topStorageSensor) && !data.getSensorData(data.m_bottomStorageSensor)){
         data.setColor(Color.BLUE);
       }
+      else if(!data.getSensorData(data.m_topStorageSensor) && data.getSensorData(data.m_bottomStorageSensor)){
+        data.setColor(Color.BLUE);
+      }
       else if(data.getSensorData(data.m_topStorageSensor) && data.getSensorData(data.m_bottomStorageSensor)){
         data.setColor(Color.GREEN);
       }
       else{
         data.setColor(Color.WHITE);
       }
-
     }
     @Override
     public boolean isFinished(){

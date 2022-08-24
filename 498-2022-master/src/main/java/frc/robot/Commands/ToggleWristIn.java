@@ -19,7 +19,7 @@ public class ToggleWristIn extends CommandBase{
     public void execute() {
       wrist.setPosition(Position.IN);
       //wrist.set(-.2);
-      SmartDashboard.putNumber("WristPError", wrist.pidController.getPositionError());
+      //SmartDashboard.putNumber("WristPError", wrist.pidController.getPositionError());
     }
     @Override
     public boolean isFinished(){

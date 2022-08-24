@@ -39,8 +39,8 @@ public class ShootCargo extends CommandBase{
       //   lowerIndex.setState(LowerIndex.State.OFF);
       //   end = true;
       // }
-      if((flywheel.state == Flywheel.State.FWD && Math.abs(flywheel.getVelocity()-1820) <= 50) || //1900//1700
-      (flywheel.state == Flywheel.State.FULL && Math.abs(flywheel.getVelocity()-3320) <= 50)){//3220//3230
+      if((flywheel.state == Flywheel.State.FWD && Math.abs(flywheel.getVelocity()-2000) <= 3000) || //1900//1700
+      (flywheel.state == Flywheel.State.FULL && Math.abs(flywheel.getVelocity()-3650) <= 3000)){//3220//3230
         upperIndex.setState(UpperIndex.State.FWD);
         lowerIndex.setState(LowerIndex.State.FWD);
         controller.setRumble(RumbleType.kLeftRumble, 0.1);

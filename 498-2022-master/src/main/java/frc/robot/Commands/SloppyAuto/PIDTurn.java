@@ -1,20 +1,23 @@
 package frc.robot.Commands.SloppyAuto;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Drivetrain;
 
-public class DriveTurn extends CommandBase{
+public class PIDTurn extends CommandBase{
   private final Drivetrain drivetrain;
   private final double angle;
     double error, output, speed;
-  public DriveTurn(Drivetrain drivetrain, double angle) {
+  public PIDTurn(Drivetrain drivetrain, double angle) {
     this.drivetrain = drivetrain;
     this.angle = angle;
     addRequirements(this.drivetrain);
   }
   public void initialize(){
     drivetrain.zeroHeading();
-    speed = .5;
+    drivetrain.setNeutralMode(NeutralMode.Brake);
+    speed = -.20;
 }
   // Called repeatedly when this Command is scheduled to run
   @Override
@@ -28,9 +31,9 @@ public class DriveTurn extends CommandBase{
       output = speed;
     }
     //output=.5;
-    
-    drivetrain.m_left_1.set(-output);
-    drivetrain.m_right_1.set(output);
+    drivetrain.setPIDNoGyro(-output, output);
+    //drivetrain.m_left_1.set(-output);
+    //drivetrain.m_right_1.set(output);
     }
     @Override
     public boolean isFinished(){

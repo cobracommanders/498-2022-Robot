@@ -26,8 +26,8 @@ public class DriveToStall extends CommandBase{
   // Called repeatedly when this Command is scheduled to run
   @Override
     public void execute() {
-      drivetrain.m_left_1.set(speed);
-      drivetrain.m_right_1.set(speed);
+      drivetrain.m_left_1.set(-speed);
+      drivetrain.m_right_1.set(-speed);
     }
     @Override
     public boolean isFinished(){

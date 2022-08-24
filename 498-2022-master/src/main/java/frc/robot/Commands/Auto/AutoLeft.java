@@ -31,15 +31,9 @@ import frc.robot.subsystems.Wrist;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/latest/docs/software/commandbased/convenience-features.html
-public class Auto1 extends SequentialCommandGroup {
+public class AutoLeft extends SequentialCommandGroup {
 
-/**
- * @param Limelight enabled
- * @param Score
- * @param Drive through Trench Run,
- * @param Score
- */
-  public Auto1(Drivetrain drivetrain, Flywheel flywheel, UpperIndex upperIndex, LowerIndex lowerIndex, Wrist wrist, Intake intake) {
+  public AutoLeft(Drivetrain drivetrain, Flywheel flywheel, UpperIndex upperIndex, LowerIndex lowerIndex, Wrist wrist, Intake intake) {
     // Add your commands in the super() call, e.g.
     // super(new FooCommand(), new BarCommand());
      super(
@@ -55,9 +49,14 @@ public class Auto1 extends SequentialCommandGroup {
            new WaitCommand(1),
            new ToggleWristOut(wrist),
            new ParallelCommandGroup(
-            new TimedIntake(intake, Intake.State.FWD, 5),
-            new TimedLowerIndex(lowerIndex, LowerIndex.State.FWD, 5),
-            new TimedUpperIndex(upperIndex, UpperIndex.State.REV, 5)
+            new TimedIntake(intake, Intake.State.REV, 2.5),
+            new TimedLowerIndex(lowerIndex, LowerIndex.State.REV, 2.5),
+            new TimedUpperIndex(upperIndex, UpperIndex.State.REV, 2.5)
+           ),
+           new ParallelCommandGroup(
+            new TimedIntake(intake, Intake.State.FWD, 2.5),
+            new TimedLowerIndex(lowerIndex, LowerIndex.State.FWD, 2.5),
+            new TimedUpperIndex(upperIndex, UpperIndex.State.REV, 2.5)
            ),
           //  new ParallelCommandGroup(
           //   new TimedIntake(intake, Intake.State.FWD, 3),
